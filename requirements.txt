@@ -1,0 +1,18 @@
+# Core automation stack
+playwright==1.47.0
+pytest==8.3.3
+pytest-playwright==0.5.2
+pytest-base-url==2.1.0
+
+# Reporting
+allure-pytest==2.13.5
+
+# Parallelism / reruns (optional but recommended for regression)
+pytest-xdist==3.6.1
+pytest-rerunfailures==14.0
+
+# Config / data
+python-dotenv==1.0.1
+
+# Excel deliverable generation (tools/build_excel_report.py)
+openpyxl==3.1.5

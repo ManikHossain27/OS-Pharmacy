@@ -1,0 +1,28 @@
+{
+  "_notes": {
+    "captured_on": "2026-09-14",
+    "pharmacy": "Manik Pharma",
+    "only_3_products_exist": "100%, TEST PRODUCT, TEST PRODUCT 2 - the whole catalog for this pharmacy",
+    "only_1_supplier_exists": "Tuhin (+8801400214548)",
+    "system_vat_percent": 17.4,
+    "opening_stock_default_percent": 12
+  },
+  "existing": {
+    "products_sample": ["100%", "TEST PRODUCT", "TEST PRODUCT 2"],
+    "supplier_sample": ["Tuhin"],
+    "product_defaults": {
+      "TEST PRODUCT": {
+        "qty_per_box": 10,
+        "btp_vat_per_box": 7.2,
+        "retail_price_per_box": 100,
+        "wholesale_price_per_box": 90
+      },
+      "100%": {
+        "qty_per_box": 1,
+        "btp_vat_per_box": 105.0,
+        "retail_price_per_box": 150,
+        "wholesale_price_per_box": 150
+      }
+    }
+  }
+}

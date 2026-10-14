@@ -1,0 +1,49 @@
+{
+  "add_product_required_messages": {
+    "Product Name": "Product name is required",
+    "Product Type": "Product type is required",
+    "Company Name": "Company name is required",
+    "Qty/Box": "Quantity per box is required",
+    "Retail Price/Box": "Retail price per box is required",
+    "Wholesale Price/Box": "Wholesale price per box is required"
+  },
+  "strings": {
+    "leading_spaces": "   QA leading",
+    "trailing_spaces": "QA trailing   ",
+    "multi_spaces": "QA     multi     spaces",
+    "single_char": "A",
+    "very_long_256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "unicode": "Ünïcödé_药品_✓",
+    "special_chars": "!@#$%^&*()_+-=[]{}|;:',.<>/?`~",
+    "html_injection": "<b>x</b><script>alert(1)</script>",
+    "sql_injection": "'; DROP TABLE products;--",
+    "whitespace_only": "     "
+  },
+  "numbers": {
+    "zero": 0,
+    "one": 1,
+    "negative": -5,
+    "decimal_1dp": 12.5,
+    "decimal_2dp": 12.55,
+    "decimal_3dp": 12.555,
+    "very_small": 0.0001,
+    "very_large": 999999999999,
+    "leading_zero": "0120",
+    "comma_number": "1,200",
+    "currency": "$120",
+    "alpha": "abc",
+    "alphanumeric": "12ab",
+    "space_padded": " 120 "
+  },
+  "quantity_label_cases": {
+    "empty": "",
+    "zero": 0,
+    "one": 1,
+    "negative": -1,
+    "decimal": 2.5,
+    "large": 100000,
+    "extreme": 100000000000,
+    "alpha": "ten",
+    "special": "#$%"
+  }
+}

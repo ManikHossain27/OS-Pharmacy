@@ -1,0 +1,74 @@
+{
+  "_notes": {
+    "seeded_on": "2026-09-08",
+    "pharmacy": "Manik Pharma",
+    "generic_used_for_full_product": "none (Generic left empty on QA SEED PRODUCT 260908 FULL; a QA generic is used on the DRAWER product instead)",
+    "catalog_product_imported": "100% (1 LITER / JUICE / GULSHAN) - catalog product id 32742",
+    "product_type_has_sort_order_field": false,
+    "product_create_workaround": "backend requires costPerBox but the UI field is disabled (BUG-PROD-001); seed products were created by injecting costPerBox",
+    "product_type_create_workaround": "backend requires slug + sortOrder, neither is in the UI (BUG-PTYPE-001); seed type created by injecting both into the POST body",
+    "add_company_generic_from_drawer": "the [+] buttons are dead (BUG-PROD-002); the *_from_drawer records could NOT be created that way"
+  },
+  "existing": {
+    "product_types_sample": [
+      "IM INJECTION", "SC INJECTION", "IV INJECTION", "SYRUP", "GEL",
+      "ORAL SOLUTION", "ORAL PASTE", "EFFERVESCENT TABLET", "PEDIATRIC DROPS",
+      "CAPSULE UPDATED"
+    ],
+    "companies_sample": [
+      "ABBOTT LABORATORIES", "ACI CONSUMER", "A F CORPORATION", "3RD PARTY VENDOR"
+    ],
+    "origin_sample": ["Bangladesh", "Foreign"]
+  },
+  "seed": {
+    "product_full": {
+      "product_name": "QA SEED PRODUCT 260908 FULL",
+      "strength": "500 mg",
+      "product_type": "IM INJECTION",
+      "company": "ABBOTT LABORATORIES",
+      "generic": null,
+      "qty_per_box": 10,
+      "cost_per_box": 90,
+      "retail_price_per_box": 120,
+      "wholesale_price_per_box": 100,
+      "rack_no": 12,
+      "barcode_value": "QASEED260908FULL",
+      "volume": "10 ml",
+      "origin": "Bangladesh",
+      "medicine": true,
+      "status": "CREATED + VERIFIED (round-trips via Edit); list shows per-unit prices Last 9 / Retail 12 / W.Sale 10 (per-box / qty 10)"
+    },
+    "product_min": {
+      "product_name": "QA SEED PRODUCT 260908 MIN",
+      "product_type": "SYRUP",
+      "company": "ACI CONSUMER",
+      "qty_per_box": 1,
+      "cost_per_box": 45,
+      "retail_price_per_box": 50,
+      "wholesale_price_per_box": 45,
+      "status": "CREATED (initially saved with wrong type CAPSULE UPDATED due to a virtualised-list mis-pick, then EDITED to SYRUP - edit verified)"
+    },
+    "product_from_qa_references": {
+      "product_name": "QA SEED PRODUCT 260908 DRAWER",
+      "product_type": "QA SEED TYPE 260908 01",
+      "company": "QA SEED COMPANY 260908 01",
+      "generic": "QA SEED GENERIC 260908 01",
+      "qty_per_box": 20,
+      "cost_per_box": 150,
+      "retail_price_per_box": 200,
+      "wholesale_price_per_box": 180,
+      "status": "CREATED + VERIFIED - proves Customization -> Add Product dropdown -> saved product -> My Products chain"
+    },
+    "catalog_import": {
+      "product_name": "100%",
+      "catalog_details": "1 LITER / JUICE / GULSHAN / Purchase Tk 105 / Sale Tk 150",
+      "catalog_product_id": 32742,
+      "status": "IMPORTED via Product Catalog 'Import' -> appears in My Products; catalog row now shows non-interactive 'Imported' badge (duplicate add prevented)"
+    },
+    "company_from_customization": {"name": "QA SEED COMPANY 260908 01", "status": "CREATED + VERIFIED selectable in Add Product"},
+    "generic_from_customization": {"name": "QA SEED GENERIC 260908 01", "status": "CREATED + VERIFIED selectable in Add Product"},
+    "product_type_from_customization": {"name": "QA SEED TYPE 260908 01", "sort_order_injected": 900, "status": "CREATED (via POST-body injection of slug+sortOrder) + VERIFIED selectable in Add Product"},
+    "company_from_drawer": {"name": "QA SEED COMPANY 260908 DRAWER", "status": "NOT CREATED - the drawer [+] button is non-functional (BUG-PROD-002)"},
+    "generic_from_drawer": {"name": "QA SEED GENERIC 260908 DRAWER", "status": "NOT CREATED - the drawer [+] button is non-functional (BUG-PROD-002)"}
+  }
+}

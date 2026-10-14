@@ -1,0 +1,34 @@
+# Secrets / local config
+.env
+
+# Virtual environments
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# Playwright / auth state
+playwright/.auth/
+.auth/
+.playwright-mcp/
+
+# Reports & evidence
+allure-results/
+allure-report/
+reports/
+screenshots/
+logs/
+test-results/
+
+# OS
+.DS_Store
+Thumbs.db
