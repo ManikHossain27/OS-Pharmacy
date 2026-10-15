@@ -26,7 +26,7 @@ the picker). Layout, the Date Range test and the search test use the default sco
 |---|---|---|---|
 | BUG-INV-034 | High | Open | Status = Paid / Due / Advance: list request returns HTTP 400 (`status should be of type java.util.Optional`), UI shows the empty state. Returned / Cancelled work. 3 tests stay red. |
 | BUG-INV-035 | Medium | Not reproducible 2026-10-13 | On 2026-10-12 the Type filter offered Missing / Destroyed and ignored them. Now only Purchase and Borrowed are offered (matches the spec). |
-| (observation) | Low | Awaiting confirmation | The list is limited to today but the Date Range inputs are blank (`test_applied_range_is_visible` stays red). Not logged as a bug yet. |
+| BUG-INV-039 | Low | Open | The list is limited to today but the Date Range inputs are blank (`test_applied_range_is_visible` stays red). Confirmed as a bug. |
 
 ## Test assumptions corrected during the live runs
 

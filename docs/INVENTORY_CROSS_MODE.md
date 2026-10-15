@@ -16,7 +16,7 @@ Suite: `tests/inventory/cross_mode/` (33 tests). Serial, headed: `pytest tests/i
 
 ## Observed behaviour not stated in the spec
 
-* **The Hold List is per mode.** A hold made in Default is not listed in TP/VAT or Opening Stock, and its count is
+* **The Hold List is per mode (confirmed intended by the product owner, 2026-10-15).** A hold made in Default is not listed in TP/VAT or Opening Stock, and its count is
   not included there. The suite pins this as the current behaviour (`test_hold_list_is_per_mode`) - confirm with the
   product owner that it is intended.
 

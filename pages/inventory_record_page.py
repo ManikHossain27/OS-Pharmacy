@@ -94,6 +94,20 @@ class InventoryRecordPage(BasePage):
     def _row_action(self, row: Locator, index: int) -> Locator:
         return row.locator("td").last.locator("div[style*='cursor: pointer']").nth(index)
 
+    # ------------------------------------------------------------------ row menu (the kebab at the end of a row)
+    MENU_ITEM = ".ant-dropdown:not(.ant-dropdown-hidden) .ant-dropdown-menu-item"
+
+    def open_row_menu(self, row: Locator) -> list[str]:
+        """Open the row's kebab menu and return its items."""
+        row.locator(".custom-drop-down-btn").click()
+        self.page.locator(self.MENU_ITEM).first.wait_for(state="visible")
+        return [t.strip() for t in self.page.locator(self.MENU_ITEM).all_inner_texts()]
+
+    def choose_row_action(self, row: Locator, label: str) -> None:
+        """Pick ``label`` ('Edit Inventory', 'Inventory Edit History', ...) from the row's kebab menu."""
+        self.open_row_menu(row)
+        self.page.locator(self.MENU_ITEM, has_text=label).first.click()
+
     # ------------------------------------------------------------------ filters / paging (live-probed 2026-10-12)
     FILTERS = {"supplier": 0, "type": 1, "status": 2}      # order of the three AntD selects under the tiles
 
@@ -216,6 +230,13 @@ class InventoryRecordPage(BasePage):
         row = self.row(index)
         dlg = InventoryDetailsDialog(self.page)
         self.click(self._row_action(row, 0), expect_effect=dlg.is_open, description="open Inventory Details")
+        return dlg
+
+    @allure.step("Open Inventory Details for {inventory_id}")
+    def open_details_for(self, inventory_id: str) -> "InventoryDetailsDialog":
+        dlg = InventoryDetailsDialog(self.page)
+        self.click(self._row_action(self.row_by_inventory_id(inventory_id), 0), expect_effect=dlg.is_open,
+                   description="open Inventory Details")
         return dlg
 
     @allure.step("Open Inventory Details for row {index}, capturing the raw API response")
