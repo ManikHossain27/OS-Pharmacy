@@ -108,6 +108,21 @@ class InventoryRecordPage(BasePage):
         self.open_row_menu(row)
         self.page.locator(self.MENU_ITEM, has_text=label).first.click()
 
+    def cancel_inventory(self, inventory_id: str) -> None:
+        """Row menu > Cancel Inventory > confirm 'Yes, cancel it'."""
+        self.choose_row_action(self.row_by_inventory_id(inventory_id), "Cancel Inventory")
+        self.page.get_by_role("button", name="Yes, cancel it").click()
+        self.page.wait_for_timeout(3000)
+
+    def pay_due_dialog_text(self, inventory_id: str) -> str:
+        """Open row menu > Pay Due, return the dialog text (the dialog is then cancelled; paying needs an SMS OTP)."""
+        self.choose_row_action(self.row_by_inventory_id(inventory_id), "Pay Due")
+        self.page.get_by_text("Confirm New Payment").wait_for(state="visible", timeout=15_000)
+        self.page.wait_for_timeout(1000)
+        text = self.page.locator(".ant-modal:visible, .ant-drawer:visible").last.inner_text()
+        self.page.get_by_role("button", name="Cancel").last.click()
+        return text
+
     # ------------------------------------------------------------------ filters / paging (live-probed 2026-10-12)
     FILTERS = {"supplier": 0, "type": 1, "status": 2}      # order of the three AntD selects under the tiles
 

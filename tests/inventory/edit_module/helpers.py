@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
 from tests.inventory.edit_module.conftest import PAYMENT_METHOD
 from utils.inventory_calc import excel_round
@@ -70,3 +71,70 @@ def update(edit, *, box_qty: int | None = None, paid: float | None = None, choic
         if paid > 0:
             co.set_payment_method(PAYMENT_METHOD)
     return edit.update_capturing_response(co, choice)
+
+
+# ---- payment outcomes and edits shared by the combination matrix -------------------------------------------------
+OUTCOMES = {                       # name -> amount paid, from the edited bill (f) and the amount paid before the edit
+    "keep": lambda f, old: old,
+    "full": lambda f, old: f,
+    "half": lambda f, old: round(f / 2),
+    "zero": lambda f, old: 0,
+    "over": lambda f, old: f + 100,
+    "less": lambda f, old: round(f * 0.9),
+}
+
+
+@dataclass
+class Result:
+    final: float          # the edit checkout's Final Price
+    paid: float           # the amount paid, as saved (rounded)
+    choice: str | None    # the payment-decision button taken
+    status: int | None
+    body: str
+
+    def expected_status(self, outcome: str) -> str:
+        if abs(self.paid - self.final) <= 0.51:
+            return "Paid"
+        if self.paid < self.final:
+            return "Paid" if outcome == "less" else "Due"
+        return "Advance"
+
+
+def apply_edit(edit, kind: str) -> None:
+    """The cart change a matrix case makes before checkout: up / down (line 0's Box Qty) or delete (line 0)."""
+    inv = edit.cart
+    if kind == "delete":
+        inv.delete_cart_row(inv.cart_row(0))
+        return
+    if kind == "none":
+        return
+    current = int(num(inv.cart_rows()[0]["Box Qty"]))
+    edit_line(edit, 0, current + 3 if kind == "up" else max(1, current - 1))
+
+
+def pay_and_update(edit, outcome: str, old_paid: float, method: str = PAYMENT_METHOD, discount=None,
+                   supplier: str | None = None) -> Result:
+    """Go to the edit checkout, apply ``discount`` ((value, '%'|'Tk') or (0, '%') to remove), pay according to
+    ``outcome`` (an OUTCOMES key), take the payment-decision button that amount calls for, and Update."""
+    co = edit.go_to_checkout()
+    if supplier:
+        co.supplier_select.select(supplier, exact=False)
+    if discount is not None:
+        co.set_discount(*discount)
+    final = co.summary()["final_price"]
+    paid = float(excel_round(OUTCOMES[outcome](final, old_paid)))
+    co.set_paid_amount(paid)
+    if paid > 0:
+        co.set_payment_method(method)
+    if paid + 0.005 < final:
+        choice = "Less & Buy" if outcome == "less" else "Due & Buy"
+    else:
+        choice = "Advance & Buy" if paid > final + 0.005 else None
+    status, body = edit.update_capturing_response(co, choice)
+    return Result(final, paid, choice, status, body)
+
+
+def add_product(edit, mode: str, spec, batch: str) -> None:
+    """Add ``spec`` as a new line in the edit cart using the mode's own form (TP/VAT and Opening Stock fill other fields)."""
+    cart = edit.cart
+    {"Default": cart.add_line, "TP/VAT": cart.add_tpvat_line, "Opening Stock": cart.add_opening_line}[mode](spec, batch)

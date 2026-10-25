@@ -35,6 +35,8 @@ class InventoryEditPage(BasePage):
             raise AssertionError(f"Edit Inventory did not open an edit route; the page is at {self.page.url}") from exc
         self.page.get_by_text("Cart Inventory Items").wait_for(state="visible", timeout=30_000)
         self._poll(lambda: self.cart.total_items() > 0, timeout=20_000)
+        title = self.heading_text()
+        self.cart.mode_override = next((m for m in ("TP/VAT", "Opening Stock") if m in title), "Default")
         return self
 
     def heading_text(self) -> str:

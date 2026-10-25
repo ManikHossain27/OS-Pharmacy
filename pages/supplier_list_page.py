@@ -60,3 +60,15 @@ class SupplierListPage(BasePage):
 
     def first_supplier(self) -> str:
         return self.names()[0]
+
+    def add_supplier(self, name: str, phone: str, balance: float | None = None) -> None:
+        """Create a supplier through the Add New Supplier drawer (Confirm New Supplier) and wait for the list to show it."""
+        self.page.get_by_role("button", name="Add New Supplier").click()
+        self.page.locator("#supplierName").fill(name)
+        self.page.locator("#phoneNumber").fill(phone)
+        if balance is not None:
+            self.page.locator("#balance").fill(str(balance))
+        with self.page.expect_response(lambda r: r.request.method == "POST" and "supplier" in r.url, timeout=30_000) as info:
+            self.page.get_by_role("button", name="Confirm New Supplier").click()
+        assert info.value.status in (200, 201), (info.value.status, info.value.text()[:300])
+        self.open()

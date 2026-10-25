@@ -52,7 +52,7 @@ class Settings:
     logs_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "logs")
     reports_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "reports")
     auth_state_path: Path = field(
-        default_factory=lambda: PROJECT_ROOT / "playwright" / ".auth" / "state.json"
+        default_factory=lambda: Path(os.getenv("AUTH_STATE") or PROJECT_ROOT / "playwright" / ".auth" / "state.json")
     )
     test_data_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "test_data")
 

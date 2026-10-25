@@ -11,30 +11,8 @@ import allure
 import pytest
 
 from pages.inventory_edit_page import EDIT_URL, InventoryEditPage
-from pages.inventory_flow import OpeningStockFlow, TpVatFlow
 from pages.inventory_record_page import InventoryRecordPage
-from tests.inventory.edit_module.conftest import create_inventory
 from tests.inventory.edit_module.helpers import edit_line, num, record_row
-from utils import opening_scenarios, tpvat_scenarios
-
-MODES = {
-    "TP/VAT": ("tpvat_inventory", TpVatFlow, tpvat_scenarios.CART_SHAPES),
-    "Opening Stock": ("opening_inventory", OpeningStockFlow, opening_scenarios.CART_SHAPES),
-}
-
-
-@pytest.fixture(params=list(MODES), ids=lambda m: m.replace("/", "").replace(" ", "").lower())
-def mode(request) -> str:
-    return request.param
-
-
-@pytest.fixture()
-def mode_saved(request, mode, run_tag):
-    """A fully paid two-line inventory created in ``mode``."""
-    fixture, flow_cls, shapes = MODES[mode]
-    inv = request.getfixturevalue(fixture)
-    return create_inventory(flow_cls(inv, run_tag), "two_plain", shapes=shapes)
-
 
 @pytest.fixture()
 def mode_edit(page, mode_saved):

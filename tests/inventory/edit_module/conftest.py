@@ -11,16 +11,22 @@ from typing import Callable
 import pytest
 
 from pages.inventory_edit_page import InventoryEditPage
-from pages.inventory_flow import InventoryFlow, Journey
+from pages.inventory_flow import InventoryFlow, Journey, OpeningStockFlow, TpVatFlow
 from pages.inventory_record_page import InventoryRecordPage
 from tests.inventory.default_mode.conftest import (  # noqa: F401
     catalogue, context, default_inventory, flow, page, pharmacy, run_tag)
 from tests.inventory.opening_stock_mode.conftest import opening_inventory  # noqa: F401
 from tests.inventory.tp_vat_mode.conftest import tpvat_inventory  # noqa: F401
 from utils.inventory_calc import excel_round
+from pages.supplier_list_page import SupplierListPage
+from utils import opening_scenarios, tpvat_scenarios
 from utils.inventory_scenarios import CART_SHAPES, Scenario
 
 PAYMENT_METHOD = "CASH"
+MODE_NAMES = ("Default", "TP/VAT", "Opening Stock")
+# mode -> (inventory fixture, flow class, cart shapes) for the two non-default modes
+_OTHER_MODES = {"TP/VAT": ("tpvat_inventory", TpVatFlow, tpvat_scenarios.CART_SHAPES),
+                "Opening Stock": ("opening_inventory", OpeningStockFlow, opening_scenarios.CART_SHAPES)}
 
 
 @dataclass
@@ -40,6 +46,7 @@ def create_inventory(flow: InventoryFlow, shape: str = "two_plain", *, discount=
     """Create an inventory in ``flow``'s mode through the UI and return what was saved (``shapes``: that mode's cart shapes)."""
     scenario = Scenario(id=f"edit-{shape}", lines=shapes[shape], discount=discount,
                         payment_method=PAYMENT_METHOD, inventory_type=inventory_type)
+    flow.inventory.open(flow.mode)      # a fresh Inventory page in this mode, whatever the previous test left on screen
     j = flow.fill_cart(scenario)
     co = flow.open_checkout(j)
     final = flow.oracle(j).final_price
@@ -58,6 +65,40 @@ def create_inventory(flow: InventoryFlow, shape: str = "two_plain", *, discount=
 def create(flow) -> Callable[..., Saved]:
     """Factory: ``create("two_plain", discount=(10, "%"), paid_ratio=0.5, choice="Due & Buy")``."""
     return lambda *a, **kw: create_inventory(flow, *a, **kw)
+
+
+@pytest.fixture()
+def create_in(request, flow, run_tag) -> Callable[..., Saved]:
+    """Factory: ``create_in("TP/VAT", "two_plain", paid_ratio=0.5, choice="Due & Buy")`` - any mode's inventory."""
+    def make(mode: str, shape: str = "two_plain", **kw) -> Saved:
+        if mode == "Default":
+            return create_inventory(flow, shape, **kw)
+        fixture, flow_cls, shapes = _OTHER_MODES[mode]
+        return create_inventory(flow_cls(request.getfixturevalue(fixture), run_tag), shape, shapes=shapes, **kw)
+    return make
+
+
+@pytest.fixture(params=["TP/VAT", "Opening Stock"], ids=lambda m: m.replace("/", "").replace(" ", "").lower())
+def mode(request) -> str:
+    """The non-default inventory modes (TP/VAT, Opening Stock) for tests that run once per mode."""
+    return request.param
+
+
+@pytest.fixture()
+def mode_saved(create_in, mode) -> Saved:
+    """A fully paid two-line inventory created in ``mode``."""
+    return create_in(mode, "two_plain")
+
+
+@pytest.fixture()
+def other_supplier(page, saved) -> str:
+    """A supplier other than the one ``saved`` was billed to; one is added to the pharmacy when it has only one."""
+    suppliers = SupplierListPage(page).open()
+    others = [n for n in suppliers.names() if n.lower() != saved.supplier.lower()]
+    if not others:
+        suppliers.add_supplier("QA Edit Supplier B", "1711223355")
+        others = [n for n in suppliers.names() if n.lower() != saved.supplier.lower()]
+    return others[0]
 
 
 @pytest.fixture()

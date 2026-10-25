@@ -25,6 +25,8 @@ def catalogue(inventory_data) -> list[str]:
     """Products for P0/P1/P2. Verified live 2026-10-06: the dropdown search for each returns
     that product first (inventory_data.json's '3 products only' note is stale - the pharmacy
     now has the full catalogue). '3 BION' is also a row in the user's workbook."""
+    if os.getenv("QA_PRODUCTS"):          # a pharmacy without the TEST PRODUCT custom product: "a,b,c"
+        return [p.strip() for p in os.getenv("QA_PRODUCTS").split(",")]
     return list(inventory_data.get("default_mode_products", ["TEST PRODUCT", "100%", "3 BION"]))
 
 

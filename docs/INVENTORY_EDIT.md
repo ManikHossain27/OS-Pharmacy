@@ -4,8 +4,8 @@ Source: the Inventory Record row menu (spec section 43) and the create flow's ru
 existing record. The spec has no dedicated Edit Inventory section, so a figure that differs from the create-flow rule
 is reported as a finding.
 
-Suite: `tests/inventory/edit_module/` (69 tests: 58 Default mode, 10 TP/VAT and Opening Stock). Serial, headed: `pytest tests/inventory/edit_module --headed-run`.
-Every test creates its own two-line, fully paid Default inventory (`create` / `saved` fixtures) and edits that one, so
+Suite: `tests/inventory/edit_module/` (about 300 tests across `test_edit_inventory.py`, `test_edit_modes.py`, `test_edit_matrix.py`, `test_edit_combinations.py`, `test_edit_actions.py`, `test_edit_mode_parity.py`). Serial, headed: `pytest tests/inventory/edit_module --headed-run`.
+Every test creates its own two-line inventory (Default, TP/VAT or Opening Stock; paid, due, advance, borrowed or discounted as the case needs) (`create` / `saved` fixtures) and edits that one, so
 shared data is never touched.
 
 ## The flow
@@ -33,6 +33,9 @@ Page objects: `pages/inventory_edit_page.py` (`InventoryEditPage`), `InventoryRe
 | Starting states | Due, Advance, Borrowed, Free Qty records |
 | Supplier and type | supplier balance follows the edit, Invoice Number persisted, supplier change (skipped: one supplier), type read-only |
 | History and navigation | none / one / two entries, abandoned edit, Edit Cart round trip, Cancelled record not editable |
+| Combination matrix (`test_edit_combinations.py`, 146) | starting state (paid, due, advance, borrowed, nothing paid, discounted) x edit (Box Qty up / down, delete a line) x payment outcome (keep, full, half, zero, over, less): Default 57, TP/VAT 26, Opening Stock 26; saved x new discount (18); payment method x outcome (12); combined changes (7) |
+| Effects of an edit (`test_edit_actions.py`) | Return cart follows the edit, supplier not pre-selected on Return, Returned record, Cancel restores the supplier balance and keeps history, Pay Due dialog shows the edited Due, repeated edits, history user and date, supplier change across two suppliers (all modes), two tabs |
+| Mode parity (`test_edit_mode_parity.py`) | TP/VAT and Opening Stock repeat the line-field, cart, checkout, history and navigation checks; TP/VAT TP/VAT edits; Opening Stock percent, manual BTP and Retail re-derive |
 | Other modes (`test_edit_modes.py`) | TP/VAT and Opening Stock: edit route and mode badge, cart pre-loaded, Box Qty reprices the line, Update matches the checkout Final Price, mode kept |
 
 ## Findings
@@ -43,6 +46,19 @@ Page objects: `pages/inventory_edit_page.py` (`InventoryEditPage`), `InventoryRe
 | BUG-INV-036 | High | Open | A Cancelled inventory still offers Edit Inventory / Pay Due / Return / Cancel and the edit screen opens |
 | BUG-INV-037 | Medium | Open | Inventory Type is editable in the edit checkout but the server refuses it (HTTP 400) |
 | BUG-INV-038 | Medium | Open | The edit checkout pre-fills Total Paid with the NEW Final Price, not the amount originally paid (confirmed expected behaviour: original paid amount) |
+| BUG-INV-039 | Low | Open | Blank Date Range inputs on the Inventory Record list |
+| BUG-INV-040 | High | Open | A fully Returned inventory still offers Edit Inventory / Pay Due / Return / Cancel |
+
+BUG-INV-030, -036 and -037 are also reproduced in TP/VAT and Opening Stock.
+
+Open question: after a Retail Price change on the Opening Stock edit screen the cart total does not change (`test_retail_price_rederives_btp`); the create screen re-derives BTP+VAT/Box. Awaiting product-owner confirmation.
+
+## Limits
+
+* Stock is not observable in the UI (C. Stock shows "-"), so stock changes after an edit are not tested.
+* Pay Due needs an SMS OTP, so only the dialog (the edited Due) is checked.
+* Two suppliers are used: "QA Edit Supplier" and "QA Edit Supplier B" (added by the `other_supplier` fixture when missing). The first sorts first in the list.
+* The edit checkout's 401 after a very long run is a session expiry, not a product defect.
 
 ## Environment notes
 
@@ -55,3 +71,7 @@ Page objects: `pages/inventory_edit_page.py` (`InventoryEditPage`), `InventoryRe
 Default mode: 55 passed, 3 failed for product bugs (BUG-INV-030, BUG-INV-036, BUG-INV-037), 1 skipped.
 TP/VAT and Opening Stock: 10 of 10 passed.
 The TP/VAT and Opening Stock edit routes carry a mode segment (`/inventory/<mode>/edit/<id>`); the page object matches both.
+
+## Live results (2026-10-22 to 2026-10-25, staging)
+
+Matrix, actions and mode parity (244 tests): 236 passed; 7 failed for product bugs (BUG-INV-030 x2, BUG-INV-036 x2, BUG-INV-037 x2, BUG-INV-040) and 1 open question (Retail re-derive). A 20-hour run is cut by session expiry (HTTP 401), so run it in chunks.

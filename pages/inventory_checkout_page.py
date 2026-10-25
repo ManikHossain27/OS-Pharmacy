@@ -6,6 +6,8 @@ appear as a cart-table column header on this same page.
 """
 from __future__ import annotations
 
+import os
+
 import re
 from typing import Any
 
@@ -74,8 +76,11 @@ class InventoryCheckoutPage(BasePage):
         self.supplier_select.select(name, exact=False)
 
     def select_first_supplier(self) -> str:
+        """The first supplier offered - or the one named by QA_SUPPLIER (a pharmacy whose first supplier is not wanted)."""
         self.supplier_select.open()
-        opt = self.supplier_select._dropdown.locator(".ant-select-item-option").first
+        wanted = os.getenv("QA_SUPPLIER")
+        options = self.supplier_select._dropdown.locator(".ant-select-item-option")
+        opt = options.filter(has_text=wanted).first if wanted else options.first
         text = opt.inner_text().strip()
         self.click(opt, description="select first supplier")
         return text

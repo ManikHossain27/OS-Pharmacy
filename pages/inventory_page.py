@@ -99,11 +99,15 @@ class InventoryPage(BasePage):
         return self.page.get_by_role("radio", name="Inventory").count() > 0
 
     def wait_loaded(self) -> "InventoryPage":
-        expect(self.page.get_by_role("combobox", name=re.compile(r"Product"))).to_be_visible(timeout=15_000)
+        expect(self.page.get_by_role("combobox", name=re.compile(r"Product"))).to_be_visible(timeout=60_000)
         return self
 
     # ------------------------------------------------------------------ mode
+    mode_override: str | None = None   # the edit screens have no mode radios; the edit page sets the record's mode
+
     def current_mode(self) -> str:
+        if self.mode_override:
+            return self.mode_override
         for m in INVENTORY_MODE_LABELS:
             radio = self.page.get_by_role("radio", name=m, exact=True)
             if radio.count() and radio.is_checked():
