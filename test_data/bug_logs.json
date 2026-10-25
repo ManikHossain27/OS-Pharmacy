@@ -1783,5 +1783,26 @@
     "Evidence": "logs/par_B3.txt (test_record_return_after_everything_sold)",
     "Related Test Case": "TC-INV-RET-57",
     "Remarks": "The server's answer to Complete was not exercised in this test."
+  },
+  {
+    "Module": "Inventory",
+    "Reproducibility": "Always",
+    "Environment": "Staging pms-sql-portal.ems24.co, pharmacy QA Ret Pharma A",
+    "Browser": "Chromium (Playwright, headed)",
+    "Status": "Open",
+    "Bug ID": "BUG-INV-056",
+    "Title": "Inventory Config: double-clicking Save Changes sends two save requests",
+    "Feature": "Settings > Inventory Config > Save Changes",
+    "Severity": "Low",
+    "Priority": "Low",
+    "Description": "Save Changes is not disabled/guarded while the first save is in flight, so a quick double-click posts the configuration twice (both HTTP 200, same values).",
+    "Preconditions": "Logged in; Settings > Inventory Config open.",
+    "Steps to Reproduce": "1. Change VAT Percentage to 9. 2. Double-click Save Changes. 3. Watch network.",
+    "Test Data": "VAT 9",
+    "Expected Result": "One save request (button disabled while saving).",
+    "Actual Result": "Two POST/PUT requests, both 200.",
+    "Evidence": "logs/cfg_A.txt (test_double_click_save)",
+    "Related Test Case": "TC-INV-CFG-05",
+    "Remarks": "Harmless to data; the same value is written twice."
   }
 ]
