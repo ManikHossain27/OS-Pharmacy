@@ -3255,6 +3255,14 @@ for _c in CASES:
         _c.remarks = "Selects are operable; not exercised this session - run in a normal browser."
 
 
+# Sale Management cases are parsed from docs/SALE_MANAGEMENT.md (single source).
+try:
+    from tools.sale_cases import load as _load_sale_cases
+except ImportError:  # run as a script from tools/
+    from sale_cases import load as _load_sale_cases
+CASES.extend(_load_sale_cases(TC))
+
+
 # ===========================================================================
 def all_rows() -> list[dict]:
     return [c.row() for c in CASES]

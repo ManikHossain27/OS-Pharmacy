@@ -66,14 +66,18 @@ class SalePage(BasePage):
     def stock_in_dropdown(self, term: str) -> tuple[float, float]:
         """(pieces, boxes) the product's option shows in the search dropdown ('28,985 | pcs | 483.08 box')."""
         first = self.product_options(term)[0]
-        m = re.search(r"([\d,]+(?:\.\d+)?)\s*\|\s*pcs?\s*\|\s*([\d,]+(?:\.\d+)?)\s*box", first)
+        m = re.search(r"(-?[\d,]+(?:\.\d+)?)\s*\|\s*pcs?\s*\|\s*(-?[\d,]+(?:\.\d+)?)\s*box", first)
         assert m, f"no stock in the option text: {first!r}"
         self.page.keyboard.press("Escape")
         return float(m.group(1).replace(",", "")), float(m.group(2).replace(",", ""))
 
-    def select_product(self, term: str) -> None:
+    def select_product(self, term: str, named: str | None = None) -> None:
+        """Pick the first option; with ``named`` wait for (and pick) the first option containing that text - the dropdown can
+        briefly show the previous search's results."""
         self.product_options(term)
-        self.page.locator(OPTION).first.click()
+        option = self.page.locator(OPTION).filter(has_text=named).first if named else self.page.locator(OPTION).first
+        option.wait_for(state="visible", timeout=30_000)
+        option.click()
         self.page.wait_for_timeout(1500)
 
     # ------------------------------------------------------------------ cart
@@ -83,10 +87,15 @@ class SalePage(BasePage):
             select.click()
             self.page.locator(OPTION).filter(has_text=re.compile("box" if unit.lower().startswith("box") else "pc", re.I)).first.dispatch_event("click")
 
-    def add_line(self, product: str, qty, unit: str = "pc") -> None:
-        self.select_product(product)
+    def add_line(self, product: str, qty, unit: str = "pc", price=None, discount_pct=None, named: str | None = None) -> None:
+        """Add a cart line. ``price`` overrides the per-piece/per-box sale price; ``discount_pct`` is a line discount in %."""
+        self.select_product(product, named=named)
         self.set_unit(unit)
         self.qty_input.fill(str(qty))
+        if price is not None:
+            self.page.locator("#retailPrice, #retailPricePerBox").first.fill(str(price))
+        if discount_pct is not None:
+            self.page.locator("#discountValue").fill(str(discount_pct))
         self.add_btn.click()
         self.page.wait_for_timeout(1500)
 
@@ -108,6 +117,30 @@ class SalePage(BasePage):
             return resp.status, resp.text()
         except Exception:
             return None, ""
+
+    # ------------------------------------------------------------------ hold
+    def hold_count(self) -> int:
+        """The Hold List badge (0 when none)."""
+        m = re.search(r"(\d+)\s*Hold List", self.page.locator("main").inner_text())
+        return int(m.group(1)) if m else 0
+
+    def hold_double_click(self) -> int:
+        """Double-click Hold Current Sale; the Hold List badge afterwards."""
+        self.page.get_by_role("button", name="Hold Current Sale").dblclick()
+        self.page.wait_for_timeout(6_000)
+        return self.hold_count()
+
+    def clear_holds(self) -> None:
+        """Delete every held sale (Hold List > Clear all > confirm)."""
+        if not self.hold_count():
+            return
+        self.page.get_by_text("Hold List").first.click()
+        self.page.get_by_role("button", name="Clear all").click(timeout=15_000)
+        confirm = self.page.get_by_role("button", name=re.compile("Yes"))
+        confirm.last.wait_for(state="visible", timeout=10_000)
+        confirm.last.focus()
+        self.page.keyboard.press("Enter")
+        self.page.wait_for_timeout(3_000)
 
     @allure.step("Sell {qty} {unit} of {product}")
     def sell(self, product: str, qty, unit: str = "pc") -> tuple[int | None, str]:

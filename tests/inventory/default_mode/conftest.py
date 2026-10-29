@@ -10,6 +10,7 @@ from playwright.sync_api import Browser, BrowserContext, Page
 
 from config import settings
 from conftest import ensure_pharmacy
+from utils import auth
 
 from pages.inventory_flow import InventoryFlow
 from pages.inventory_page import InventoryPage
@@ -91,15 +92,12 @@ def pharmacy(page: Page, storage_state_path):
     again, refresh the saved state and retry once before giving up. The state is re-saved
     AFTER the pharmacy is selected so the next run starts already inside Manik Pharma and
     skips the picker (each page load costs ~40-60 s on the staging dev build)."""
-    from pages.login_page import LoginPage
     try:
         selected = ensure_pharmacy(page, storage_state_path)
     except pytest.skip.Exception:
         page.context.clear_cookies()
         page.goto(settings.base_url + "login", wait_until="domcontentloaded")
-        LoginPage(page).login()
-        page.wait_for_url(lambda u: "/login" not in u, timeout=settings.nav_timeout)
-        page.context.storage_state(path=str(storage_state_path))
+        auth.login(page, storage_state_path)
         selected = ensure_pharmacy(page, storage_state_path)
     try:
         page.context.storage_state(path=str(storage_state_path))

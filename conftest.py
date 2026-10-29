@@ -25,8 +25,8 @@ from playwright.sync_api import (
 )
 
 from config import settings
-from pages.login_page import LoginPage
 from pages.pharmacy_selection_page import PharmacySelectionPage
+from utils import auth
 from utils.helpers import attach_page_context, read_json, screenshot
 from utils.logger import get_logger
 
@@ -92,21 +92,7 @@ def browser(playwright_instance: Playwright, pytestconfig: pytest.Config) -> Ite
 @pytest.fixture(scope="session")
 def storage_state_path(browser: Browser) -> Path:
     """Log in once, persist storage_state, return its path."""
-    path = settings.auth_state_path
-    if settings.reuse_auth_state and path.exists() and path.stat().st_size > 0:
-        log.info("Reusing existing auth state: %s", path)
-        return path
-
-    ctx = browser.new_context(base_url=settings.base_url, viewport={"width": 1920, "height": 1000})
-    page = ctx.new_page()
-    LoginPage(page).login()
-    # Land on the pharmacy picker or dashboard; make sure we're authenticated.
-    page.wait_for_url(lambda u: "/login" not in u, timeout=settings.nav_timeout)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    ctx.storage_state(path=str(path))
-    ctx.close()
-    log.info("Saved fresh auth state: %s", path)
-    return path
+    return auth.ensure_state(browser, settings.auth_state_path)
 
 
 @pytest.fixture()
@@ -166,13 +152,7 @@ def ensure_pharmacy(page: Page, storage_state_path: Path) -> PharmacySelectionPa
         page.goto(settings.base_url + "dashboard", wait_until="domcontentloaded")
 
     _goto_dashboard()
-    if "/login" in page.url:
-        log.warning("reused session is dead - re-authenticating and regenerating auth state")
-        LoginPage(page).login()
-        try:
-            page.context.storage_state(path=str(storage_state_path))
-        except Exception:
-            pass
+    if auth.ensure_logged_in(page, storage_state_path):
         _goto_dashboard()
 
     sidebar = page.locator("aside")

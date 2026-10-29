@@ -96,17 +96,18 @@ def sheet_summary(wb: Workbook) -> None:
     not_run = by_status.get("Not Run", 0)
     executed = passed + failed
 
-    ws.append(["PMS - Product, Customization & Inventory Modules - Test Execution Summary"])
+    ws.append(["PMS - Product, Customization, Inventory & Sale Modules - Test Execution Summary"])
     ws["A1"].font = Font(bold=True, size=14)
     ws.append([])
     ws.append(["Application", "https://pms-sql-portal.ems24.co/"])
     ws.append(["Environment", "Staging"])
     ws.append(["Pharmacy under test", "Manik Pharma (id 606 originally, then id 598 from 2026-09-09 onward after 606 began 404-ing - see env notes)"])
-    ws.append(["Test dates", "2026-09-08/09 (Products & Customizations) + 2026-09-14/15 (Inventory) + 2026-09-16 (Inventory Return, Stock Adjustment, Customization regression)"])
+    ws.append(["Test dates", "2026-09-08/09 (Products & Customizations) + 2026-09-14/15 (Inventory) + 2026-09-16 (Inventory Return, Stock Adjustment, Customization regression) + 2026-10-27 (Sale Management)"])
     ws.append(["Prepared by", "Senior SQA (automation-assisted)"])
     ws.append(["Env note (2026-09-09)", "BUG-API-001: mid-run API outage (CORS/500/404, pharmacy 606 -> 404) blocked the full pharmacy-scoped re-run; findings from the 04:42-05:19 UTC healthy window are the run of record."])
     ws.append(["Env note (2026-09-14/15)", "The same BUG-API-001 pattern also appears as spurious 'pharmacy not found' skips whenever the reused Playwright auth state (playwright/.auth/state.json) goes stale after ~30-40 min of continuous runs - not an actual outage; deleting that file and rerunning resolves it."])
     ws.append(["Env note (2026-09-16)", "Inventory Return and Stock Adjustment had zero prior coverage and were tested live end-to-end for the first time this session, including completion, cancellation/reversal, and Details-view accuracy against the raw API. Customizations > Product Type create was regression-confirmed still broken (BUG-PTYPE-001, unchanged); Company create and the new Payment Method List sub-page were spot-checked with no regressions found."])
+    ws.append(["Env note (2026-10-27)", "Sale Management (Sale Config, Loyalty Config, Customer, POS/Checkout, Hold, Cashier, Sale Record, Sale Return, Dashboard reconciliation) was executed with Playwright MCP (Chromium; Firefox and WebKit for a smoke check) in Manik Pharma; cases are listed under Module 'Sale' (source: docs/SALE_MANAGEMENT.md). Real sales, returns, cancellations, customers, loyalty redemptions (SMS OTP) and cashier approvals were created on staging. Sale Config, Loyalty Config and Invoice Config were changed for the tests and restored to their original values. Cases that need a second user role, a multi-batch product or a PDF parser are Blocked with the reason in Remarks."])
     ws.append([])
 
     ws.append(["Metric", "Count", "%"])

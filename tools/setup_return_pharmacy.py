@@ -13,9 +13,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from playwright.sync_api import sync_playwright  # noqa: E402
 
 from config import settings  # noqa: E402
-from pages.login_page import LoginPage  # noqa: E402
 from pages.pharmacy_selection_page import PharmacySelectionPage  # noqa: E402
 from pages.product_catalog_page import ProductCatalogPage  # noqa: E402
+from utils import auth  # noqa: E402
 
 PRODUCTS = [("100", "100%"), ("3 BION", "3 BION"), ("3BIOTIC 100GM", "3BIOTIC 100GM")]
 SUPPLIERS = [("QA Edit Supplier", "1711223344"), ("QA Edit Supplier B", "1711223355")]
@@ -62,8 +62,7 @@ def main(names: list[str]) -> None:
         for name in names:
             print(name, flush=True)
             pg.goto(settings.base_url + "pharmacies", wait_until="domcontentloaded")
-            if "/login" in pg.url:
-                LoginPage(pg).login()
+            if auth.ensure_logged_in(pg):
                 pg.goto(settings.base_url + "pharmacies", wait_until="domcontentloaded")
             PharmacySelectionPage(pg).select(name)
             import_products(pg)

@@ -15,6 +15,7 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 
 from config import settings  # noqa: E402
 from pages.pharmacy_selection_page import PharmacySelectionPage  # noqa: E402
+from utils import auth  # noqa: E402
 
 OPTION = ".ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option"
 
@@ -47,6 +48,8 @@ def main(amount: str, names: list[str]) -> None:
         pg = ctx.new_page()
         for name in names:
             print(name, flush=True)
+            pg.goto(settings.base_url + "pharmacies", wait_until="domcontentloaded")
+            auth.ensure_logged_in(pg)
             pg.goto(settings.base_url + "pharmacies", wait_until="domcontentloaded")
             PharmacySelectionPage(pg).select(name)
             fund(pg, amount)
